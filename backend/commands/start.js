@@ -1,15 +1,16 @@
-import { Telegraf } from "telegraf";
-import Parser from "rss-parser";
-import dotenv from "dotenv";
-import { loadFeeds, saveFeeds } from "./db.js";
+export default function startCommand(bot) {
+  bot.start((ctx) => {
+    ctx.reply(`
+👋 Welcome to *Upwork Job Notify Bot*!  
 
-dotenv.config();
+🚀 I’ll keep you updated with new job postings from Upwork based on your skills.  
 
-export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-export const parser = new Parser();
-export let feeds = loadFeeds();
+To begin:
+1️⃣ Save a search on Upwork (e.g., "Frontend developer").  
+2️⃣ Copy the RSS feed link.  
+3️⃣ Send it here with 👉 /addfeed <rssUrl>  
 
-export function updateFeeds(newFeeds) {
-  feeds = newFeeds;
-  saveFeeds(feeds);
+Type ℹ️ /help anytime to see all commands and tips.
+    `, { parse_mode: "Markdown" });
+  });
 }

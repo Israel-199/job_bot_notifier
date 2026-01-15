@@ -6,7 +6,7 @@ export default function developerCommand(bot) {
 This bot was developed by *Israel Assefa*  
 (Full-Stack Developer)
 
-📬 Contact:
+📬 Contact Me:
 💬 Telegram: @Isru4600  
 📧 Email: israelassefa199@gmail.com  
 

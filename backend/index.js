@@ -36,39 +36,38 @@ bot.telegram.setMyCommands([
   { command: "clearfeeds", description: "🧹 Clear all feeds" },
 ]);
 
-// Express server to keep Render alive
+// Express server
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Health check route
 app.get("/", (req, res) => {
   res.send("✅ Job Bot Notifier is running");
 });
 
-// Launch bot
+// Mount Telegraf webhook into Express
+app.use(bot.webhookCallback("/telegram"));
+
+// Set webhook URL for Telegram (production only)
 if (process.env.NODE_ENV === "production") {
-  bot.launch({
-    webhook: {
-      domain: "https://job-bot-notifier.onrender.com",
-      port: PORT,
-    },
-  });
+  bot.telegram.setWebhook(`https://job-bot-notifier.onrender.com/telegram`);
 } else {
-  bot.launch(); // polling for local dev
+  // Local dev: use polling
+  bot.launch();
 }
 
 // Start scheduler
 startScheduler();
 
-// 🔔 Cron job to keep service active and run periodic tasks
-// This runs every 5 minutes
+// 🔔 Cron job to run periodic tasks every 5 minutes
 cron.schedule("*/5 * * * *", () => {
-  console.log("⏰ Cron job triggered: keeping bot alive and running tasks");
+  console.log("⏰ Cron job triggered: running periodic tasks");
 
-  // You can also trigger your feed-checking logic here
-  // startScheduler(); // if you want to re-run periodically
+  // Example: heartbeat log or feed check
+  // startScheduler(); // re-run feed checks if needed
 });
 
-// Start express server
+// Start Express server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

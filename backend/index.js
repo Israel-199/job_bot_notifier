@@ -31,9 +31,20 @@ bot.telegram.setMyCommands([
   { command: "addfeed", description: "➕ Add an Upwork RSS feed" },
   { command: "listfeeds", description: "📋 List your feeds" },
   { command: "removefeed", description: "🗑️ Remove a feed" },
-  { command: "clearfeeds", description: "🧹 Clear all feeds" }
+  { command: "clearfeeds", description: "🧹 Clear all feeds" },
 ]);
 
 // Start bot + scheduler
-bot.launch();
+if (process.env.NODE_ENV === "production") {
+  const PORT = process.env.PORT || 3000;
+  bot.launch({
+    webhook: {
+      domain: "https://your-app.onrender.com",
+      port: PORT,
+    },
+  });
+} else {
+  bot.launch(); // polling for local dev
+}
+
 startScheduler();

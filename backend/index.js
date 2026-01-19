@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
   const PORT = process.env.PORT || 3000;
   bot.launch({
     webhook: {
-      domain: "https://your-app.onrender.com",
+      domain: "https://job-bot-notifier.onrender.com",
       port: PORT,
     },
   });

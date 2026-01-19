@@ -9,6 +9,8 @@ import listfeedsCommand from "./commands/listfeeds.js";
 import removefeedCommand from "./commands/removefeed.js";
 import clearfeedsCommand from "./commands/clearfeeds.js";
 import { startScheduler } from "./scheduler.js";
+import express from "express";
+import cron from "node-cron";
 
 // Register commands
 startCommand(bot);
@@ -34,9 +36,16 @@ bot.telegram.setMyCommands([
   { command: "clearfeeds", description: "🧹 Clear all feeds" },
 ]);
 
-// Start bot + scheduler
+// Express server to keep Render alive
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("✅ Job Bot Notifier is running");
+});
+
+// Launch bot
 if (process.env.NODE_ENV === "production") {
-  const PORT = process.env.PORT || 3000;
   bot.launch({
     webhook: {
       domain: "https://job-bot-notifier.onrender.com",
@@ -47,4 +56,19 @@ if (process.env.NODE_ENV === "production") {
   bot.launch(); // polling for local dev
 }
 
+// Start scheduler
 startScheduler();
+
+// 🔔 Cron job to keep service active and run periodic tasks
+// This runs every 5 minutes
+cron.schedule("*/5 * * * *", () => {
+  console.log("⏰ Cron job triggered: keeping bot alive and running tasks");
+
+  // You can also trigger your feed-checking logic here
+  // startScheduler(); // if you want to re-run periodically
+});
+
+// Start express server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

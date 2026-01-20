@@ -22,7 +22,6 @@ export function startScheduler() {
     console.log("⏰ Scheduler triggered: checking skills...");
     try {
       const allSkills = await prisma.feed.findMany();
-
       const skillsByUser = allSkills.reduce((acc, feed) => {
         const uid = feed.userId.toString();
         if (!acc[uid]) acc[uid] = [];

@@ -1,16 +1,14 @@
-import prisma from "../db.js"; // PrismaClient instance
+import prisma from "../db.js"; 
 
 export default function clearfeedsCommand(bot) {
   bot.command("clearfeeds", async (ctx) => {
     const userId = BigInt(ctx.chat.id);
 
     try {
-      // Delete all feeds for this user
       await prisma.feed.deleteMany({
         where: { userId },
       });
 
-      // Optionally also clear seen jobs
       await prisma.seenJob.deleteMany({
         where: { userId },
       });

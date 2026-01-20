@@ -1,16 +1,28 @@
-import { feeds, updateFeeds } from "../bot.js";
+import prisma from "../db.js"; // PrismaClient instance
 
 export default function removefeedCommand(bot) {
-  bot.command("removefeed", (ctx) => {
+  bot.command("removefeed", async (ctx) => {
     const rssUrl = ctx.message.text.split(" ")[1];
-    const chatId = ctx.chat.id;
-
-    if (!feeds[chatId] || !feeds[chatId].urls.includes(rssUrl)) {
-      return ctx.reply("⚠️ That feed isn’t in your list.");
+    if (!rssUrl) {
+      return ctx.reply("Usage: /removefeed <Upwork RSS feed URL>");
     }
 
-    feeds[chatId].urls = feeds[chatId].urls.filter(url => url !== rssUrl);
-    updateFeeds(feeds);
-    ctx.reply(`🗑️ Removed feed: ${rssUrl}`);
+    const userId = BigInt(ctx.chat.id);
+
+    try {
+      // Delete feed for this user
+      const result = await prisma.feed.deleteMany({
+        where: { userId, url: rssUrl },
+      });
+
+      if (result.count === 0) {
+        ctx.reply("⚠️ That feed isn’t in your list.");
+      } else {
+        ctx.reply(`🗑️ Removed feed: ${rssUrl}`);
+      }
+    } catch (err) {
+      console.error("Error removing feed:", err);
+      ctx.reply("❌ Failed to remove feed.");
+    }
   });
 }

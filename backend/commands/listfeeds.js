@@ -1,11 +1,10 @@
-import prisma from "../db.js"; // PrismaClient instance
+import prisma from "../db.js"; 
 
 export default function listfeedsCommand(bot) {
   bot.command("listfeeds", async (ctx) => {
     const userId = BigInt(ctx.chat.id);
 
     try {
-      // Fetch feeds from Postgres
       const feeds = await prisma.feed.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" },

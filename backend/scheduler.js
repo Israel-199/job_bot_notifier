@@ -33,7 +33,6 @@ export function startScheduler() {
                   data: { userId: BigInt(chatId), jobUrl: jobId },
                 });
 
-                // Format posted time
                 const postedTime = item.pubDate
                   ? new Date(item.pubDate).toLocaleString("en-US", {
                       timeZone: "UTC",
@@ -41,13 +40,11 @@ export function startScheduler() {
                     })
                   : "Unknown";
 
-                // Truncate description if too long
                 const description = item.description
                   ? item.description.slice(0, 300) +
                     (item.description.length > 300 ? "..." : "")
                   : "No description provided.";
 
-                // Send job notification with title, time, description, and link
                 await bot.telegram.sendMessage(
                   chatId,
                   `🆕 <b>${item.title}</b>\n🕒 Posted: ${postedTime}\n\n${description}\n\n🔗 ${item.link}`,

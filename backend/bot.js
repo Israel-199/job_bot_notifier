@@ -1,32 +1,44 @@
 import { Telegraf } from "telegraf";
-import Parser from "rss-parser";
 import dotenv from "dotenv";
-import prisma from "./db.js"; 
+import prisma from "./db.js";
+import fetch from "node-fetch";
+import cheerio from "cheerio";
 
 dotenv.config();
 
 export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-export const parser = new Parser({
-  headers: {
-    "User-Agent": "Mozilla/5.0 (compatible; Bot/1.0; +https://yourdomain.com)",
-    "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
-  }
-});
+export async function scrapeJobs(skill) {
+  const url = `https://www.upwork.com/nx/search/jobs/?q=${encodeURIComponent(skill)}`;
+  const res = await fetch(url);
+  const html = await res.text();
+  const $ = cheerio.load(html);
 
-export async function loadFeeds(userId) {
+  const jobs = [];
+  $(".job-tile").each((i, el) => {
+    jobs.push({
+      title: $(el).find(".job-title").text().trim(),
+      link: "https://www.upwork.com" + $(el).find("a").attr("href"),
+      description: $(el).find(".job-description").text().trim(),
+    });
+  });
+
+  return jobs;
+}
+
+export async function loadSkills(userId) {
   const feeds = await prisma.feed.findMany({
     where: { userId: BigInt(userId) },
   });
-  return feeds.map(f => f.url);
+  return feeds.map(f => f.skill); 
 }
 
-export async function saveFeeds(userId, urls) {
+export async function saveSkills(userId, skills) {
   await prisma.feed.deleteMany({ where: { userId: BigInt(userId) } });
 
-  for (const url of urls) {
+  for (const skill of skills) {
     await prisma.feed.create({
-      data: { userId: BigInt(userId), url },
+      data: { userId: BigInt(userId), skill },
     });
   }
 }

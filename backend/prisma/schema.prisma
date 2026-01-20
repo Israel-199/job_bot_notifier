@@ -9,9 +9,11 @@ generator client {
 
 model Feed {
   id        Int      @id @default(autoincrement())
-  userId    BigInt
-  skill     String   
+  userId    BigInt 
+  skill     String
   createdAt DateTime @default(now())
+
+  @@index([userId])   
 }
 
 model SeenJob {
@@ -20,4 +22,7 @@ model SeenJob {
   jobUrl    String
   seen      Boolean  @default(true)
   createdAt DateTime @default(now())
+
+  @@index([userId])          
+  @@unique([userId, jobUrl])
 }

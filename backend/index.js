@@ -13,7 +13,6 @@ import express from "express";
 import cron from "node-cron";
 import axios from "axios";
 
-// Register commands
 startCommand(bot);
 helpCommand(bot);
 aboutCommand(bot);
@@ -24,7 +23,6 @@ listSkillsCommand(bot);
 removeSkillCommand(bot);
 clearSkillsCommand(bot);
 
-// Update Telegram command list
 bot.telegram.setMyCommands([
   { command: "start", description: "👋 Welcome message" },
   { command: "help", description: "❓ Show help guide" },
@@ -37,7 +35,6 @@ bot.telegram.setMyCommands([
   { command: "clearskills", description: "🧹 Clear all tracked skills" },
 ]);
 
-// Express setup
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -53,15 +50,12 @@ if (process.env.NODE_ENV === "production") {
   bot.launch();
 }
 
-// Start scheduler
 startScheduler();
 
-// Cron job (every 5 minutes — adjust to 15 if you want to stay under 100 requests/day)
 cron.schedule("*/5 * * * *", () => {
   console.log("⏰ Cron job triggered: running periodic tasks");
 });
 
-// Keep Render backend awake
 setInterval(() => {
   axios
     .get("https://job-bot-notifier.onrender.com")

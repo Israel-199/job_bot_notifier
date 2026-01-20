@@ -1,4 +1,4 @@
-import prisma from "../db.js"; // PrismaClient instance
+import prisma from "../db.js";
 
 export default function removefeedCommand(bot) {
   bot.command("removefeed", async (ctx) => {
@@ -10,7 +10,6 @@ export default function removefeedCommand(bot) {
     const userId = BigInt(ctx.chat.id);
 
     try {
-      // Delete feed for this user
       const result = await prisma.feed.deleteMany({
         where: { userId, url: rssUrl },
       });

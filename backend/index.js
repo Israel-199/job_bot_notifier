@@ -39,7 +39,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-  res.send("✅ Job Bot Notifier is running");
+  res.send("Job Bot Notifier is running");
 });
 
 app.use(bot.webhookCallback("/telegram"));

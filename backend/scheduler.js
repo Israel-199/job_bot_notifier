@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { bot, parser } from "./bot.js";
+import { bot, scrapeJobs } from "./bot.js";
 import prisma from "./db.js";
 
 function formatRelativeTime(pubDate) {
@@ -18,26 +18,26 @@ function formatRelativeTime(pubDate) {
 }
 
 export function startScheduler() {
-  cron.schedule("*/5 * * * *", async () => {
-    console.log("⏰ Scheduler triggered: checking feeds...");
+  cron.schedule("*/15 * * * *", async () => {   
+    console.log("⏰ Scheduler triggered: checking skills...");
 
     try {
-      const allFeeds = await prisma.feed.findMany();
+      const allSkills = await prisma.feed.findMany();
 
-      const feedsByUser = allFeeds.reduce((acc, feed) => {
+      const skillsByUser = allSkills.reduce((acc, feed) => {
         const uid = feed.userId.toString();
         if (!acc[uid]) acc[uid] = [];
-        acc[uid].push(feed.url);
+        acc[uid].push(feed.skill);  
         return acc;
       }, {});
 
-      for (const [chatId, urls] of Object.entries(feedsByUser)) {
-        for (const rssUrl of urls) {
+      for (const [chatId, skills] of Object.entries(skillsByUser)) {
+        for (const skill of skills) {
           try {
-            const feed = await parser.parseURL(rssUrl);
+            const jobs = await scrapeJobs(skill);
 
-            for (const item of feed.items.slice(0, 5)) {
-              const jobId = item.link;
+            for (const job of jobs.slice(0, 5)) {
+              const jobId = job.link;
               const seen = await prisma.seenJob.findFirst({
                 where: { userId: BigInt(chatId), jobUrl: jobId },
               });
@@ -47,25 +47,23 @@ export function startScheduler() {
                   data: { userId: BigInt(chatId), jobUrl: jobId },
                 });
 
-                const postedTime = formatRelativeTime(item.pubDate);
-
-                const description = item.description
-                  ? item.description.slice(0, 300) +
-                    (item.description.length > 300 ? "..." : "")
+                const description = job.description
+                  ? job.description.slice(0, 300) +
+                    (job.description.length > 300 ? "..." : "")
                   : "No description provided.";
 
                 await bot.telegram.sendMessage(
                   chatId,
-                  `🆕 <b>${item.title}</b>\n🕒 Posted: ${postedTime}\n\n${description}\n\n🔗 ${item.link}`,
+                  `🆕 <b>${job.title}</b>\n🕒 Posted: Just now\n\n${description}\n\n🔗 ${job.link}`,
                   { parse_mode: "HTML" }
                 );
               }
             }
           } catch (err) {
-            console.error("❌ Error fetching feed:", rssUrl, err.message);
+            console.error("❌ Error scraping jobs for skill:", skill, err.message);
             await bot.telegram.sendMessage(
               chatId,
-              `⚠️ Failed to fetch feed: ${rssUrl}`
+              `⚠️ Failed to fetch jobs for skill: ${skill}`
             );
           }
         }

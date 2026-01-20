@@ -55,6 +55,7 @@ startScheduler();
 cron.schedule("*/5 * * * *", () => {
   console.log("⏰ Cron job triggered: running periodic tasks");
 });
+
 setInterval(() => {
   axios
     .get("https://job-bot-notifier.onrender.com")

@@ -1,14 +1,12 @@
-import fs from "fs";
+import pkg from "pg";
+import dotenv from "dotenv";
 
-const DB_FILE = "feeds.json";
+dotenv.config();
+const { Pool } = pkg;
 
-export function loadFeeds() {
-  if (fs.existsSync(DB_FILE)) {
-    return JSON.parse(fs.readFileSync(DB_FILE));
-  }
-  return {};
-}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, 
+});
 
-export function saveFeeds(feeds) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(feeds, null, 2));
-}
+export default pool;

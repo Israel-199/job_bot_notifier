@@ -1,0 +1,23 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Feed {
+  id        Int      @id @default(autoincrement())
+  userId    BigInt
+  url       String
+  createdAt DateTime @default(now())
+}
+
+model SeenJob {
+  id        Int      @id @default(autoincrement())
+  userId    BigInt
+  jobUrl    String
+  seen      Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

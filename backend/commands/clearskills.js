@@ -5,12 +5,10 @@ export default function clearSkillsCommand(bot) {
     const userId = BigInt(ctx.chat.id);
 
     try {
-      // Delete all tracked skills for this user
       await prisma.feed.deleteMany({
         where: { userId },
       });
 
-      // Delete all seen jobs for this user
       await prisma.seenJob.deleteMany({
         where: { userId },
       });

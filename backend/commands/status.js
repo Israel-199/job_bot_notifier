@@ -5,18 +5,18 @@ export default function statusCommand(bot) {
     const userId = BigInt(ctx.chat.id);
 
     try {
-      const feedCount = await prisma.feed.count({
+      const skillCount = await prisma.feed.count({
         where: { userId },
       });
 
-      if (feedCount === 0) {
+      if (skillCount === 0) {
         return ctx.reply(
-          "📊 Status: You don’t have any feeds yet. ➕ Add one with /addfeed <url>"
+          "📊 Status: You don’t have any tracked skills yet. ➕ Add one with /addskill <keyword>"
         );
       }
 
       ctx.reply(
-        `📊 Status: You currently have *${feedCount}* feed(s) saved.\n⏱️ I’m checking them every 5 minutes for new jobs.`,
+        `📊 Status: You currently have *${skillCount}* skill(s) saved.\n⏱️ I’m checking them every 15 minutes for new jobs.`,
         { parse_mode: "Markdown" }
       );
     } catch (err) {

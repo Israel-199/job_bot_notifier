@@ -18,9 +18,8 @@ function formatRelativeTime(pubDate) {
 }
 
 export function startScheduler() {
-  cron.schedule("*/15 * * * *", async () => {   
+  cron.schedule("*/5 * * * *", async () => {
     console.log("⏰ Scheduler triggered: checking skills...");
-
     try {
       const allSkills = await prisma.feed.findMany();
 

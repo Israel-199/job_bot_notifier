@@ -2,17 +2,18 @@ import { Telegraf } from "telegraf";
 import dotenv from "dotenv";
 import prisma from "./db.js";
 import fetch from "node-fetch";
-import cheerio from "cheerio";
+import { load } from "cheerio";   // ✅ Correct ESM import
 
 dotenv.config();
 
 export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
+// Scraper function to fetch jobs by skill keyword
 export async function scrapeJobs(skill) {
   const url = `https://www.upwork.com/nx/search/jobs/?q=${encodeURIComponent(skill)}`;
   const res = await fetch(url);
   const html = await res.text();
-  const $ = cheerio.load(html);
+  const $ = load(html);   // ✅ use load instead of cheerio.load
 
   const jobs = [];
   $(".job-tile").each((i, el) => {
@@ -26,6 +27,7 @@ export async function scrapeJobs(skill) {
   return jobs;
 }
 
+// Load skills (instead of RSS URLs)
 export async function loadSkills(userId) {
   const feeds = await prisma.feed.findMany({
     where: { userId: BigInt(userId) },
@@ -33,6 +35,7 @@ export async function loadSkills(userId) {
   return feeds.map(f => f.skill); 
 }
 
+// Save skills
 export async function saveSkills(userId, skills) {
   await prisma.feed.deleteMany({ where: { userId: BigInt(userId) } });
 
@@ -43,6 +46,7 @@ export async function saveSkills(userId, skills) {
   }
 }
 
+// Track seen jobs
 export async function markJobSeen(userId, jobUrl) {
   await prisma.seenJob.create({
     data: { userId: BigInt(userId), jobUrl },

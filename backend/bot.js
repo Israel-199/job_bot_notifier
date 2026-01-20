@@ -1,8 +1,7 @@
 import { Telegraf } from "telegraf";
 import dotenv from "dotenv";
 import prisma from "./db.js";
-import fetch from "node-fetch";
-import { load } from "cheerio"; 
+import puppeteer from "puppeteer";
 
 dotenv.config();
 
@@ -10,19 +9,24 @@ export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 export async function scrapeJobs(skill) {
   const url = `https://www.upwork.com/nx/search/jobs/?q=${encodeURIComponent(skill)}`;
-  const res = await fetch(url);
-  const html = await res.text();
-  const $ = load(html);  
 
-  const jobs = [];
-  $(".job-tile").each((i, el) => {
-    jobs.push({
-      title: $(el).find(".job-title").text().trim(),
-      link: "https://www.upwork.com" + $(el).find("a").attr("href"),
-      description: $(el).find(".job-description").text().trim(),
-    });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
+  const page = await browser.newPage();
+  await page.goto(url, { waitUntil: "networkidle2" });
+
+  const jobs = await page.evaluate(() => {
+    return Array.from(document.querySelectorAll(".job-tile")).map(el => ({
+      title: el.querySelector(".job-title")?.innerText.trim(),
+      link: "https://www.upwork.com" + el.querySelector("a")?.getAttribute("href"),
+      description: el.querySelector(".job-description")?.innerText.trim(),
+    }));
+  });
+
+  await browser.close();
   return jobs;
 }
 
@@ -30,7 +34,7 @@ export async function loadSkills(userId) {
   const feeds = await prisma.feed.findMany({
     where: { userId: BigInt(userId) },
   });
-  return feeds.map(f => f.skill); 
+  return feeds.map(f => f.skill);
 }
 
 export async function saveSkills(userId, skills) {
